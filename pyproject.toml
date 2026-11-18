@@ -1,0 +1,12 @@
+[project]
+name = "smart-python-optimizer"
+version = "1.0.0"
+description = "Python source analysis and conservative optimization workbench"
+authors = [{ name = "Asadullah" }]
+readme = "README.md"
+requires-python = ">=3.9"
+dependencies = ["Flask>=2.3"]
+
+[tool.smart-python-optimizer]
+project-author = "Asadullah"
+project-mode = "independent-python-modules"

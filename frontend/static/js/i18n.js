@@ -1,0 +1,220 @@
+/* Languages: welcome/intro in 12 languages; tutor lessons, glossary, quiz and report headings in en / ur / hi / ar.
+   To add a language: add one entry to LANGS and (optionally) one object to TUTOR / GLOSS with the same keys as "en". */
+const LANGS = [
+  {code: 'en', name: 'English', speech: 'en-US', rtl: false, welcome: 'Welcome to Smart Python Optimizer', tagline: 'See your code the way a compiler sees it, in 3D.', start: 'Start'},
+  {code: 'ur', name: 'اردو', speech: 'ur-PK', rtl: true, welcome: 'اسمارٹ پائتھن آپٹیمائزر میں خوش آمدید', tagline: 'اپنے کوڈ کو کمپائلر کی نظر سے دیکھیں، تھری ڈی میں۔', start: 'شروع کریں'},
+  {code: 'sd', name: 'سنڌي', speech: 'sd-PK', speechFallback: 'ur-PK', rtl: true, welcome: 'سمارٽ پائٿون آپٽيمائيزر ۾ ڀلي ڪري آيا', tagline: 'پنهنجي ڪوڊ کي ڪمپائلر جي نظر سان ڏسو، ٽي ڊي ۾.', start: 'شروع ڪريو'},
+  {code: 'hi', name: 'हिन्दी', speech: 'hi-IN', rtl: false, welcome: 'स्मार्ट पायथन ऑप्टिमाइज़र में आपका स्वागत है', tagline: 'अपने कोड को कंपाइलर की नज़र से देखें, 3D में।', start: 'शुरू करें'},
+  {code: 'ar', name: 'العربية', speech: 'ar-SA', rtl: true, welcome: 'مرحبًا بك في محسّن بايثون الذكي', tagline: 'شاهد شيفرتك كما يراها المترجم، بثلاثة أبعاد.', start: 'ابدأ'},
+  {code: 'es', name: 'Español', speech: 'es-ES', rtl: false, welcome: 'Bienvenido a Smart Python Optimizer', tagline: 'Mira tu código como lo ve un compilador, en 3D.', start: 'Comenzar'},
+  {code: 'fr', name: 'Français', speech: 'fr-FR', rtl: false, welcome: 'Bienvenue dans Smart Python Optimizer', tagline: 'Voyez votre code comme un compilateur le voit, en 3D.', start: 'Commencer'},
+  {code: 'de', name: 'Deutsch', speech: 'de-DE', rtl: false, welcome: 'Willkommen beim Smart Python Optimizer', tagline: 'Sehen Sie Ihren Code wie ein Compiler, in 3D.', start: 'Starten'},
+  {code: 'tr', name: 'Türkçe', speech: 'tr-TR', rtl: false, welcome: "Smart Python Optimizer'a hoş geldiniz", tagline: 'Kodunuzu bir derleyicinin gördüğü gibi görün, 3D olarak.', start: 'Başla'},
+  {code: 'zh', name: '中文', speech: 'zh-CN', rtl: false, welcome: '欢迎使用智能 Python 优化器', tagline: '以编译器的视角，用 3D 看你的代码。', start: '开始'},
+  {code: 'ja', name: '日本語', speech: 'ja-JP', rtl: false, welcome: 'スマート Python オプティマイザーへようこそ', tagline: 'コンパイラの目でコードを見よう。3Dで。', start: 'はじめる'},
+  {code: 'ru', name: 'Русский', speech: 'ru-RU', rtl: false, welcome: 'Добро пожаловать в Smart Python Optimizer', tagline: 'Смотрите на код глазами компилятора, в 3D.', start: 'Начать'}
+];
+const TUTOR_LANGS = ['en', 'ur', 'hi', 'ar'];
+const langOf = c => LANGS.find(l => l.code === c) || LANGS[0];
+const fill = (s, v = {}) => String(s).replace(/\{(\w+)\}/g, (m, k) => (v[k] ?? m));
+
+const TUTOR = {
+en: {
+  ui: {play: 'Play lesson', pause: 'Pause', next: 'Next', prev: 'Back', ask: 'Ask Pyro', askPh: 'Ask: what is a CFG? what is SSA? what is Big-O?', mic: 'Speak', listening: 'Listening…', quiz: 'Quiz', newQuiz: 'New quiz', lesson: 'Lesson', step: 'Step', noVoice: 'No voice for this language is installed on your device. Showing captions only.', noAnswer: 'I do not know that term yet. Try: lexer, parser, AST, CFG, SSA, IR, data-flow, Big-O, memoization, symbol table.'},
+  titles: {hello: 'Welcome', phases: 'Compiler phases', opt: 'Optimizations', recs: 'Algorithm ideas', cx: 'Complexity', end: 'Finish'},
+  hello: "Hello! I'm Pyro, your compiler tutor. Let's walk through {file} together.",
+  stats: "Your program has {lines} lines, {functions} functions and {loops} loops. Its estimated running time is {time}, and memory use is {space}.",
+  phases: "First, the compiler reads your code in phases. The lexer cuts it into tokens, like splitting a sentence into words. The parser builds a syntax tree, like a grammar diagram. Semantic analysis checks names and meaning. Then a control flow graph is built, a road map of every path your program can take.",
+  optIntro: "Now the optimizations. I applied {n} safe changes, using {p} different techniques.",
+  nochange: "I found no safe automatic optimizations in this code, which means it is already quite clean.",
+  example: "Example on line {line}: {before} became {after}.",
+  recsIntro: "Next, algorithm suggestions. These are bigger ideas that I only recommend, because they change how your code works.",
+  rec: "In {fn}, line {line}: {title}. The complexity could improve from {from} to {to}.",
+  cx: "Overall, the estimated time complexity went from {a} to {b}.",
+  cxSame: "Overall, the estimated time complexity stays at {a}.",
+  end: "That's the full tour. Open the quiz tab to test yourself. Good luck!",
+  pass: {
+    constant_folding: "Constant folding: the compiler does arithmetic on fixed numbers ahead of time. It is like writing 24 on a form instead of 'six times four', so nobody recalculates it later.",
+    constant_propagation: "Constant propagation: when a variable always holds one known value, we replace the variable by that value. It is like writing 21 instead of 'my age' in every sentence once you know it.",
+    copy_propagation: "Copy propagation: if y is just a copy of x, use x directly. It is like reading the original paper instead of a photocopy.",
+    cse: "Common subexpression elimination: if the same calculation appears twice, compute it once and reuse it. It is like writing the bill total on a note instead of adding it up again.",
+    dead_code: "Dead code elimination: remove work whose result is never used. It is like not cooking food that nobody will eat.",
+    licm: "Loop-invariant code motion: move calculations that never change out of the loop. It is like measuring the room once before painting, not before every brush stroke.",
+    strength_reduction: "Strength reduction: swap an expensive operation for a cheaper one, such as a multiplication for an addition or shift. It is like using a bicycle instead of a truck for a short trip.",
+    loop_unrolling: "Loop unrolling: for tiny loops, write the repetitions out directly to skip the loop bookkeeping. It is like writing clap, clap, clap instead of 'clap three times and keep count'.",
+    inlining: "Function inlining: put the body of a tiny function right where it is called. It is like copying a short recipe step into your notes instead of flipping to another page every time.",
+    unused_imports: "Unused import removal: delete libraries that are loaded but never used. It is like not carrying a toolbox you never open.",
+    recommendations: "Approved suggestion applied: memoization caches the results of a function so the same question is never answered twice, like a notebook of solved answers."},
+  recKind: {
+    list_membership: "Checking 'x in list' scans the list one item at a time, O of n. A set answers in about one step, like searching a phone's contacts instead of reading a paper phone book page by page.",
+    memoization: "This function repeats the same sub-problems. Caching the answers, called memoization, solves each one only once, like keeping a notebook of solved questions.",
+    duplicate_detection: "Comparing every pair with two nested loops is O of n squared. Remembering what you have seen in a set is O of n, like ticking names off one list instead of comparing everyone with everyone.",
+    nested_loop_search: "A loop inside a loop to find matches grows with the square of the input. A dictionary or set lookup is almost instant, like using a book's index instead of reading every page.",
+    repeated_sort: "Sorting inside a loop repeats the same heavy work. Sort once outside the loop, like arranging your bookshelf once instead of before every book.",
+    string_concat: "Building a string with plus-equals in a loop can copy the text again and again. Collect the pieces in a list and join once, like gathering bricks first instead of rebuilding the wall every time.",
+    generic: "This pattern can be made faster. Read the suggestion on screen carefully before changing the code."},
+  quiz: {cx: "What is the estimated time complexity of function {fn}?", pass: "Which technique turned {before} into {after}?", ok: 'Correct!', bad: 'Not quite. The answer is {ans}.', score: 'Score: {s} / {n}', done: 'Quiz finished', needData: 'Optimize a file first so the quiz can use your own code.'}
+},
+ur: {
+  ui: {play: 'لیسن چلائیں', pause: 'روکیں', next: 'اگلا', prev: 'پچھلا', ask: 'پائرو سے پوچھیں', askPh: 'پوچھیں: CFG کیا ہے؟ SSA کیا ہے؟ Big-O کیا ہے؟', mic: 'بولیں', listening: 'سن رہا ہوں…', quiz: 'کوئز', newQuiz: 'نیا کوئز', lesson: 'سبق', step: 'مرحلہ', noVoice: 'آپ کے ڈیوائس پر اس زبان کی آواز انسٹال نہیں۔ صرف کیپشن دکھائے جا رہے ہیں۔', noAnswer: 'مجھے یہ اصطلاح ابھی معلوم نہیں۔ آزمائیں: lexer, parser, AST, CFG, SSA, IR, data-flow, Big-O, memoization, symbol table۔'},
+  titles: {hello: 'خوش آمدید', phases: 'کمپائلر کے مراحل', opt: 'آپٹیمائزیشنز', recs: 'الگورتھم کے خیالات', cx: 'پیچیدگی', end: 'اختتام'},
+  hello: "السلام علیکم! میں پائرو ہوں، آپ کا کمپائلر ٹیوٹر۔ آئیے {file} کو ساتھ مل کر سمجھتے ہیں۔",
+  stats: "آپ کے پروگرام میں {lines} لائنیں، {functions} فنکشن اور {loops} لوپ ہیں۔ اس کا اندازاً رننگ ٹائم {time} اور میموری {space} ہے۔",
+  phases: "پہلے کمپائلر آپ کا کوڈ مرحلوں میں پڑھتا ہے۔ لیکسر اسے ٹوکنز میں کاٹتا ہے، جیسے جملے کو الفاظ میں تقسیم کرنا۔ پارسر سنٹیکس ٹری بناتا ہے، جیسے گرامر کا نقشہ۔ سیمینٹک تجزیہ ناموں اور مطلب کی جانچ کرتا ہے۔ پھر کنٹرول فلو گراف بنتا ہے، یعنی پروگرام کے ہر ممکنہ راستے کا نقشہ۔",
+  optIntro: "اب آپٹیمائزیشنز۔ میں نے {p} مختلف تکنیکوں سے {n} محفوظ تبدیلیاں کیں۔",
+  nochange: "اس کوڈ میں مجھے کوئی محفوظ خودکار آپٹیمائزیشن نہیں ملی، یعنی کوڈ پہلے ہی کافی صاف ہے۔",
+  example: "لائن {line} پر مثال: {before} بدل کر {after} ہو گیا۔",
+  recsIntro: "اگلے مرحلے میں الگورتھم کی تجاویز ہیں۔ یہ بڑے خیالات ہیں جو میں صرف تجویز کرتا ہوں، کیونکہ یہ کوڈ کے کام کرنے کا طریقہ بدل دیتے ہیں۔",
+  rec: "{fn} میں، لائن {line}: {title}۔ پیچیدگی {from} سے بہتر ہو کر {to} ہو سکتی ہے۔",
+  cx: "مجموعی طور پر اندازاً ٹائم کمپلیکسٹی {a} سے {b} ہو گئی۔",
+  cxSame: "مجموعی طور پر اندازاً ٹائم کمپلیکسٹی {a} ہی رہتی ہے۔",
+  end: "یہ پورا دورہ تھا۔ خود کو آزمانے کے لیے کوئز ٹیب کھولیں۔ بہت شکریہ!",
+  pass: {
+    constant_folding: "کانسٹنٹ فولڈنگ: کمپائلر مقررہ نمبروں کا حساب پہلے ہی کر لیتا ہے۔ جیسے فارم پر 'چھ ضرب چار' لکھنے کے بجائے سیدھا 24 لکھ دینا، تاکہ بعد میں کوئی دوبارہ حساب نہ کرے۔",
+    constant_propagation: "کانسٹنٹ پروپیگیشن: اگر کسی ویری ایبل میں ہمیشہ ایک ہی معلوم ویلیو ہو تو ویری ایبل کی جگہ وہی ویلیو لکھ دی جاتی ہے۔ جیسے جب آپ کو پتا ہو کہ آپ کی عمر 21 ہے تو ہر جملے میں 'میری عمر' کی جگہ سیدھا 21 لکھ دیں۔",
+    copy_propagation: "کاپی پروپیگیشن: اگر y صرف x کی نقل ہے تو سیدھا x استعمال کریں۔ جیسے فوٹو کاپی پڑھنے کے بجائے اصل کاغذ پڑھ لینا۔",
+    cse: "کامن سب ایکسپریشن ایلیمینیشن: اگر ایک ہی حساب دو بار آ رہا ہو تو اسے ایک بار کر کے نتیجہ دوبارہ استعمال کریں۔ جیسے بل کا ٹوٹل ایک پرچی پر لکھ لینا، ہر بار دوبارہ جمع نہ کرنا۔",
+    dead_code: "ڈیڈ کوڈ ایلیمینیشن: وہ کام ختم کر دیں جس کا نتیجہ کبھی استعمال نہیں ہوتا۔ جیسے ایسا کھانا نہ پکانا جسے کوئی کھائے گا ہی نہیں۔",
+    licm: "لوپ انویریئنٹ کوڈ موشن: جو حساب لوپ کے اندر بار بار بدلتا ہی نہیں اسے لوپ سے باہر نکال دیں۔ جیسے کمرہ رنگ کرنے سے پہلے ناپ ایک بار لینا، ہر برش پر نہیں۔",
+    strength_reduction: "اسٹرینتھ ریڈکشن: مہنگے عمل کی جگہ سستا عمل لگائیں، جیسے ضرب کی جگہ جمع یا شفٹ۔ جیسے چھوٹے سفر کے لیے ٹرک کے بجائے سائیکل استعمال کرنا۔",
+    loop_unrolling: "لوپ انرولنگ: بہت چھوٹے لوپ کی تکرار کو سیدھا لکھ دیا جاتا ہے تاکہ لوپ کا اضافی حساب کتاب بچ جائے۔ جیسے 'تین بار تالی بجاؤ اور گنتی رکھو' کی جگہ سیدھا تالی، تالی، تالی۔",
+    inlining: "فنکشن ان لائننگ: چھوٹے فنکشن کی باڈی وہیں رکھ دی جاتی ہے جہاں اسے کال کیا گیا۔ جیسے مختصر ترکیب کو ہر بار دوسرے صفحے پر جانے کے بجائے اپنی نوٹ بک میں نقل کر لینا۔",
+    unused_imports: "اَن یوزڈ امپورٹ ہٹانا: جو لائبریریاں لوڈ تو ہوتی ہیں مگر استعمال نہیں ہوتیں انہیں ہٹا دیں۔ جیسے ایسا ٹول باکس نہ اٹھانا جسے کھولنا ہی نہیں۔",
+    recommendations: "منظور شدہ تجویز لاگو ہوئی: میموائزیشن فنکشن کے نتائج یاد رکھتی ہے تاکہ ایک ہی سوال کا جواب دو بار نہ نکالنا پڑے، جیسے جوابات کی کاپی۔"},
+  recKind: {
+    list_membership: "'x in list' لسٹ کو ایک ایک کر کے دیکھتا ہے، یعنی O(n)۔ سیٹ تقریباً ایک ہی قدم میں جواب دے دیتا ہے، جیسے موبائل میں نام سرچ کرنا بمقابلہ کاغذی فون بک کا ایک ایک صفحہ پڑھنا۔",
+    memoization: "یہ فنکشن ایک ہی ذیلی مسئلہ بار بار حل کرتا ہے۔ جوابات یاد رکھ لینا (میموائزیشن) ہر مسئلہ ایک ہی بار حل کرواتا ہے، جیسے حل شدہ سوالات کی کاپی رکھنا۔",
+    duplicate_detection: "دو لوپس میں ہر جوڑی کا موازنہ O(n²) ہے۔ سیٹ میں دیکھے ہوئے عناصر یاد رکھنا O(n) ہے، جیسے ایک فہرست میں نام ٹک کرتے جانا، ہر ایک کا ہر ایک سے موازنہ نہ کرنا۔",
+    nested_loop_search: "میچ ڈھونڈنے کے لیے لوپ کے اندر لوپ ان پٹ کے مربع کے حساب سے بڑھتا ہے۔ ڈکشنری یا سیٹ سے تلاش تقریباً فوری ہے، جیسے کتاب کی انڈیکس دیکھنا، ہر صفحہ نہ پڑھنا۔",
+    repeated_sort: "لوپ کے اندر سورٹ ایک ہی بھاری کام دہراتا ہے۔ ایک بار باہر سورٹ کریں، جیسے کتابوں کی الماری ایک بار ترتیب دینا، ہر کتاب سے پہلے نہیں۔",
+    string_concat: "لوپ میں += سے اسٹرنگ بنانا متن کو بار بار نقل کر سکتا ہے۔ ٹکڑے لسٹ میں جمع کریں اور آخر میں ایک بار join کریں، جیسے اینٹیں جمع کر کے دیوار بنانا، ہر بار پوری دیوار دوبارہ نہ بنانا۔",
+    generic: "یہ پیٹرن تیز کیا جا سکتا ہے؛ کوڈ بدلنے سے پہلے اسکرین پر دی گئی تجویز غور سے پڑھیں۔"},
+  quiz: {cx: "فنکشن {fn} کی اندازاً ٹائم کمپلیکسٹی کیا ہے؟", pass: "کس تکنیک نے {before} کو {after} میں بدلا؟", ok: 'درست!', bad: 'بالکل نہیں۔ درست جواب {ans} ہے۔', score: 'اسکور: {s} / {n}', done: 'کوئز مکمل', needData: 'پہلے کوئی فائل آپٹیمائز کریں تاکہ کوئز آپ ہی کا کوڈ استعمال کرے۔'}
+},
+hi: {
+  ui: {play: 'पाठ चलाएँ', pause: 'रोकें', next: 'अगला', prev: 'पिछला', ask: 'पायरो से पूछें', askPh: 'पूछें: CFG क्या है? SSA क्या है? Big-O क्या है?', mic: 'बोलें', listening: 'सुन रहा हूँ…', quiz: 'क्विज़', newQuiz: 'नया क्विज़', lesson: 'पाठ', step: 'चरण', noVoice: 'आपके डिवाइस पर इस भाषा की आवाज़ इंस्टॉल नहीं है। सिर्फ़ कैप्शन दिख रहे हैं।', noAnswer: 'मुझे यह शब्द अभी नहीं पता। आज़माएँ: lexer, parser, AST, CFG, SSA, IR, data-flow, Big-O, memoization, symbol table।'},
+  titles: {hello: 'स्वागत', phases: 'कंपाइलर के चरण', opt: 'ऑप्टिमाइज़ेशन', recs: 'एल्गोरिदम के विचार', cx: 'जटिलता', end: 'समाप्त'},
+  hello: "नमस्ते! मैं पायरो हूँ, आपका कंपाइलर ट्यूटर। आइए {file} को साथ मिलकर समझते हैं।",
+  stats: "आपके प्रोग्राम में {lines} लाइनें, {functions} फ़ंक्शन और {loops} लूप हैं। इसका अनुमानित रनिंग टाइम {time} और मेमोरी {space} है।",
+  phases: "पहले कंपाइलर आपका कोड चरणों में पढ़ता है। लेक्सर उसे टोकन में काटता है, जैसे वाक्य को शब्दों में बाँटना। पार्सर सिंटैक्स ट्री बनाता है, जैसे व्याकरण का नक्शा। सिमैंटिक विश्लेषण नामों और अर्थ की जाँच करता है। फिर कंट्रोल फ़्लो ग्राफ़ बनता है, यानी प्रोग्राम के हर संभावित रास्ते का नक्शा।",
+  optIntro: "अब ऑप्टिमाइज़ेशन। मैंने {p} अलग तकनीकों से {n} सुरक्षित बदलाव किए।",
+  nochange: "इस कोड में मुझे कोई सुरक्षित ऑटोमैटिक ऑप्टिमाइज़ेशन नहीं मिला, यानी कोड पहले से काफ़ी साफ़ है।",
+  example: "लाइन {line} पर उदाहरण: {before} बदलकर {after} हो गया।",
+  recsIntro: "अगले चरण में एल्गोरिदम के सुझाव हैं। ये बड़े विचार हैं जो मैं सिर्फ़ सुझाता हूँ, क्योंकि ये कोड के काम करने का तरीका बदल देते हैं।",
+  rec: "{fn} में, लाइन {line}: {title}। जटिलता {from} से बेहतर होकर {to} हो सकती है।",
+  cx: "कुल मिलाकर अनुमानित टाइम कॉम्प्लेक्सिटी {a} से {b} हो गई।",
+  cxSame: "कुल मिलाकर अनुमानित टाइम कॉम्प्लेक्सिटी {a} ही रहती है।",
+  end: "यह पूरा दौरा था। खुद को परखने के लिए क्विज़ टैब खोलें। शुभकामनाएँ!",
+  pass: {
+    constant_folding: "कॉन्स्टेंट फोल्डिंग: कंपाइलर तय संख्याओं का हिसाब पहले ही कर लेता है। जैसे फ़ॉर्म में 'छह गुणा चार' लिखने की जगह सीधे 24 लिख देना, ताकि बाद में कोई दोबारा गणना न करे।",
+    constant_propagation: "कॉन्स्टेंट प्रोपेगेशन: अगर किसी वेरिएबल में हमेशा एक ही ज्ञात मान रहता है, तो वेरिएबल की जगह वही मान लिख दिया जाता है। जैसे जब पता हो कि आपकी उम्र 21 है, तो हर वाक्य में 'मेरी उम्र' की जगह सीधे 21 लिखना।",
+    copy_propagation: "कॉपी प्रोपेगेशन: अगर y सिर्फ x की नकल है, तो सीधे x इस्तेमाल करें। जैसे फोटोकॉपी पढ़ने की जगह असली कागज़ पढ़ना।",
+    cse: "कॉमन सबएक्सप्रेशन एलिमिनेशन: एक ही गणना दो बार आए तो उसे एक बार करके नतीजा दोबारा इस्तेमाल करें। जैसे बिल का कुल योग पर्ची पर लिख लेना, हर बार फिर से न जोड़ना।",
+    dead_code: "डेड कोड एलिमिनेशन: ऐसा काम हटा दें जिसका नतीजा कभी इस्तेमाल नहीं होता। जैसे ऐसा खाना न पकाना जिसे कोई खाएगा ही नहीं।",
+    licm: "लूप इन्वेरिएंट कोड मोशन: जो गणना लूप में बदलती ही नहीं, उसे लूप के बाहर ले आएं। जैसे कमरा रंगने से पहले नाप एक बार लेना, हर ब्रश पर नहीं।",
+    strength_reduction: "स्ट्रेंथ रिडक्शन: महंगी क्रिया की जगह सस्ती क्रिया लगाएं, जैसे गुणा की जगह जोड़ या शिफ्ट। जैसे छोटी दूरी के लिए ट्रक की जगह साइकिल।",
+    loop_unrolling: "लूप अनरोलिंग: बहुत छोटे लूप की दोहराव को सीधे लिख दिया जाता है ताकि लूप का अतिरिक्त हिसाब बचे। जैसे 'तीन बार ताली बजाओ और गिनती रखो' की जगह सीधे ताली, ताली, ताली।",
+    inlining: "फ़ंक्शन इनलाइनिंग: छोटे फ़ंक्शन का शरीर वहीं रख दिया जाता है जहाँ उसे बुलाया गया। जैसे छोटी विधि को हर बार दूसरे पन्ने पर जाने की जगह अपनी नोटबुक में उतार लेना।",
+    unused_imports: "अनयूज़्ड इम्पोर्ट हटाना: जो लाइब्रेरी लोड होती हैं पर इस्तेमाल नहीं होतीं, उन्हें हटा दें। जैसे ऐसा टूलबॉक्स न उठाना जिसे खोलना ही नहीं।",
+    recommendations: "मंज़ूर किया गया सुझाव लागू हुआ: मेमोइज़ेशन फ़ंक्शन के नतीजे याद रखता है ताकि एक ही सवाल का जवाब दो बार न निकालना पड़े, जैसे जवाबों की कॉपी।"},
+  recKind: {
+    list_membership: "'x in list' सूची को एक-एक करके देखता है, यानी O(n)। सेट लगभग एक ही कदम में जवाब देता है, जैसे फ़ोन में नाम खोजना बनाम कागज़ की फ़ोनबुक का हर पन्ना पढ़ना।",
+    memoization: "यह फ़ंक्शन एक ही उप-समस्या बार-बार हल करता है। जवाब याद रखना (मेमोइज़ेशन) हर समस्या को सिर्फ़ एक बार हल करवाता है, जैसे हल किए सवालों की कॉपी रखना।",
+    duplicate_detection: "दो लूप में हर जोड़ी की तुलना O(n²) है। सेट में देखे हुए तत्व याद रखना O(n) है, जैसे एक सूची में नाम टिक करते जाना, हर किसी की हर किसी से तुलना न करना।",
+    nested_loop_search: "मैच खोजने के लिए लूप के अंदर लूप इनपुट के वर्ग के हिसाब से बढ़ता है। डिक्शनरी या सेट से खोज लगभग तुरंत होती है, जैसे किताब की इंडेक्स देखना, हर पन्ना न पढ़ना।",
+    repeated_sort: "लूप के अंदर सॉर्ट वही भारी काम दोहराता है। एक बार बाहर सॉर्ट करें, जैसे किताबों की अलमारी एक बार सजाना, हर किताब से पहले नहीं।",
+    string_concat: "लूप में += से स्ट्रिंग बनाना टेक्स्ट को बार-बार कॉपी कर सकता है। टुकड़े सूची में जमा करें और अंत में एक बार join करें, जैसे ईंटें जमा करके दीवार बनाना, हर बार पूरी दीवार दोबारा नहीं।",
+    generic: "इस पैटर्न को तेज़ किया जा सकता है; कोड बदलने से पहले स्क्रीन पर दिया सुझाव ध्यान से पढ़ें।"},
+  quiz: {cx: "फ़ंक्शन {fn} की अनुमानित टाइम कॉम्प्लेक्सिटी क्या है?", pass: "किस तकनीक ने {before} को {after} में बदला?", ok: 'सही!', bad: 'बिल्कुल नहीं। सही उत्तर {ans} है।', score: 'स्कोर: {s} / {n}', done: 'क्विज़ पूरा', needData: 'पहले कोई फ़ाइल ऑप्टिमाइज़ करें ताकि क्विज़ आपका ही कोड इस्तेमाल करे।'}
+},
+ar: {
+  ui: {play: 'شغّل الدرس', pause: 'إيقاف مؤقت', next: 'التالي', prev: 'السابق', ask: 'اسأل بايرو', askPh: 'اسأل: ما هو CFG؟ ما هو SSA؟ ما هو Big-O؟', mic: 'تحدّث', listening: 'أستمع…', quiz: 'اختبار', newQuiz: 'اختبار جديد', lesson: 'الدرس', step: 'الخطوة', noVoice: 'لا يوجد صوت لهذه اللغة على جهازك. تُعرض الترجمة النصية فقط.', noAnswer: 'لا أعرف هذا المصطلح بعد. جرّب: lexer, parser, AST, CFG, SSA, IR, data-flow, Big-O, memoization, symbol table.'},
+  titles: {hello: 'مرحبًا', phases: 'مراحل المترجم', opt: 'التحسينات', recs: 'أفكار الخوارزميات', cx: 'التعقيد', end: 'الختام'},
+  hello: "مرحبًا! أنا بايرو، معلّمك للمترجمات. هيا نستعرض {file} معًا.",
+  stats: "يحتوي برنامجك على {lines} سطرًا و{functions} دالة و{loops} حلقة. زمن التشغيل المقدَّر {time} واستهلاك الذاكرة {space}.",
+  phases: "أولًا، يقرأ المترجم شيفرتك على مراحل. المحلّل المعجمي يقطّعها إلى رموز، كتقسيم الجملة إلى كلمات. المحلّل النحوي يبني شجرة الصياغة، كمخطط القواعد. التحليل الدلالي يفحص الأسماء والمعنى. ثم يُبنى مخطط تدفق التحكم، وهو خريطة لكل مسار يمكن أن يسلكه برنامجك.",
+  optIntro: "الآن التحسينات. طبّقت {n} تغييرًا آمنًا بـ {p} تقنيات مختلفة.",
+  nochange: "لم أجد أي تحسين تلقائي آمن في هذه الشيفرة، أي أنها نظيفة أصلًا.",
+  example: "مثال في السطر {line}: {before} أصبح {after}.",
+  recsIntro: "بعد ذلك اقتراحات الخوارزميات. هذه أفكار أكبر أكتفي باقتراحها لأنها تغيّر طريقة عمل شيفرتك.",
+  rec: "في {fn}، السطر {line}: {title}. قد يتحسن التعقيد من {from} إلى {to}.",
+  cx: "إجمالًا، تغيّر التعقيد الزمني المقدَّر من {a} إلى {b}.",
+  cxSame: "إجمالًا، يبقى التعقيد الزمني المقدَّر {a}.",
+  end: "هذه كانت الجولة الكاملة. افتح تبويب الاختبار لتختبر نفسك. بالتوفيق!",
+  pass: {
+    constant_folding: "طيّ الثوابت: يحسب المترجم العمليات على الأعداد الثابتة مسبقًا. مثل كتابة 24 في الاستمارة بدل «ستة في أربعة» حتى لا يعيد أحد الحساب لاحقًا.",
+    constant_propagation: "نشر الثوابت: إذا كان المتغير يحمل دائمًا قيمة واحدة معروفة، نضع القيمة مكانه. مثل أن تعرف أن عمرك 21 فتكتب 21 مباشرة بدل «عمري» في كل جملة.",
+    copy_propagation: "نشر النسخ: إذا كان y مجرد نسخة من x فاستخدم x مباشرة. مثل قراءة الورقة الأصلية بدل الصورة المصوّرة.",
+    cse: "حذف التعبيرات الفرعية المشتركة: إذا تكرر الحساب نفسه فاحسبه مرة واحدة وأعد استخدام النتيجة. مثل كتابة مجموع الفاتورة على ورقة بدل جمعه في كل مرة.",
+    dead_code: "حذف الشيفرة الميتة: أزل العمل الذي لا تُستخدم نتيجته أبدًا. مثل ألا تطبخ طعامًا لن يأكله أحد.",
+    licm: "إخراج الثوابت من الحلقة: انقل الحسابات التي لا تتغير خارج الحلقة. مثل قياس الغرفة مرة واحدة قبل الطلاء، لا عند كل ضربة فرشاة.",
+    strength_reduction: "تخفيف القوة: استبدل عملية مكلفة بأخرى أرخص، كاستبدال الضرب بالجمع أو الإزاحة. مثل استخدام دراجة بدل شاحنة لمشوار قصير.",
+    loop_unrolling: "فتح الحلقات: تُكتب تكرارات الحلقة الصغيرة جدًا مباشرة لتوفير تكلفة إدارة الحلقة. مثل كتابة «صفّق، صفّق، صفّق» بدل «صفّق ثلاث مرات واحسب».",
+    inlining: "دمج الدوال: يوضع جسم الدالة الصغيرة مكان استدعائها. مثل نسخ خطوة قصيرة من وصفة إلى دفترك بدل التنقل بين الصفحات في كل مرة.",
+    unused_imports: "حذف الاستيرادات غير المستخدمة: أزل المكتبات التي تُحمَّل ولا تُستعمل. مثل ألا تحمل صندوق أدوات لن تفتحه.",
+    recommendations: "تم تطبيق اقتراح موافَق عليه: التذكّر (memoization) يحفظ نتائج الدالة كي لا يُجاب عن السؤال نفسه مرتين، كدفتر إجابات."},
+  recKind: {
+    list_membership: "فحص «x in list» يمرّ على القائمة عنصرًا عنصرًا، أي O(n). المجموعة (set) تجيب تقريبًا في خطوة واحدة، كالبحث عن اسم في هاتفك مقابل قراءة دليل هاتف ورقي صفحة صفحة.",
+    memoization: "هذه الدالة تحلّ المسألة الفرعية نفسها مرارًا. حفظ الإجابات (memoization) يجعل كل مسألة تُحلّ مرة واحدة، كدفتر للأسئلة المحلولة.",
+    duplicate_detection: "مقارنة كل زوج بحلقتين متداخلتين هي O(n²). تذكّر العناصر المرئية في مجموعة هو O(n)، كوضع علامة على الأسماء في قائمة واحدة بدل مقارنة الجميع بالجميع.",
+    nested_loop_search: "حلقة داخل حلقة للبحث عن تطابق تنمو بمربّع حجم المدخلات. البحث في قاموس أو مجموعة شبه فوري، كاستخدام فهرس الكتاب بدل قراءة كل صفحة.",
+    repeated_sort: "الفرز داخل حلقة يكرر العمل الثقيل نفسه. افرز مرة واحدة خارجها، كترتيب رفّ الكتب مرة واحدة لا قبل كل كتاب.",
+    string_concat: "بناء نص بـ += داخل حلقة قد ينسخ النص مرارًا. اجمع القطع في قائمة ثم ادمجها مرة واحدة بـ join، كجمع الطوب ثم البناء بدل إعادة بناء الجدار كل مرة.",
+    generic: "يمكن تسريع هذا النمط؛ اقرأ الاقتراح الظاهر على الشاشة جيدًا قبل تغيير الشيفرة."},
+  quiz: {cx: "ما التعقيد الزمني المقدَّر للدالة {fn}؟", pass: "أي تقنية حوّلت {before} إلى {after}؟", ok: 'صحيح!', bad: 'ليس تمامًا. الإجابة الصحيحة هي {ans}.', score: 'النتيجة: {s} / {n}', done: 'انتهى الاختبار', needData: 'حسّن ملفًا أولًا ليستخدم الاختبار شيفرتك أنت.'}
+}
+};
+
+/* glossary for "Ask Pyro": keywords match in any language */
+const GLOSS = [
+  {k: ['lexer', 'scanner', 'token', 'لیکسر', 'ٹوکن', 'लेक्सर', 'टोकन', 'المعجمي', 'رموز'], t: {
+    en: "A lexer (or scanner) is the first compiler phase. It reads characters and groups them into tokens such as keywords, names, numbers and operators.",
+    ur: "لیکسر (یا اسکینر) کمپائلر کا پہلا مرحلہ ہے۔ یہ حروف پڑھ کر انہیں ٹوکنز میں گروپ کرتا ہے، جیسے کی ورڈز، نام، نمبر اور آپریٹرز۔",
+    hi: "लेक्सर (या स्कैनर) कंपाइलर का पहला चरण है। यह अक्षर पढ़कर उन्हें टोकन में समूहित करता है, जैसे कीवर्ड, नाम, संख्याएँ और ऑपरेटर।",
+    ar: "المحلل المعجمي (lexer) هو المرحلة الأولى في المترجم. يقرأ الحروف ويجمعها في رموز مثل الكلمات المفتاحية والأسماء والأرقام والعوامل."}},
+  {k: ['parser', 'parse', 'پارسر', 'पार्सर', 'النحوي'], t: {
+    en: "A parser checks that the tokens follow the language grammar and builds a tree from them, the abstract syntax tree.",
+    ur: "پارسر دیکھتا ہے کہ ٹوکنز زبان کی گرامر کے مطابق ہیں یا نہیں، اور ان سے ایک درخت بناتا ہے جسے ایبسٹریکٹ سنٹیکس ٹری کہتے ہیں۔",
+    hi: "पार्सर जाँचता है कि टोकन भाषा के व्याकरण के अनुसार हैं या नहीं, और उनसे एक पेड़ बनाता है जिसे एब्सट्रैक्ट सिंटैक्स ट्री कहते हैं।",
+    ar: "المحلل النحوي يتحقق من أن الرموز تتبع قواعد اللغة ويبني منها شجرة تسمى شجرة الصياغة المجردة."}},
+  {k: ['ast', 'syntax tree', 'سنٹیکس ٹری', 'ایبسٹریکٹ', 'सिंटैक्स ट्री', 'शجرة', 'الصياغة', 'एब्सट्रैक्ट'], t: {
+    en: "The AST, or abstract syntax tree, shows the structure of your program: functions contain statements, and statements contain expressions.",
+    ur: "AST یعنی ایبسٹریکٹ سنٹیکس ٹری آپ کے پروگرام کی ساخت دکھاتا ہے: فنکشن میں اسٹیٹمنٹس ہوتی ہیں اور اسٹیٹمنٹس میں ایکسپریشنز۔",
+    hi: "AST यानी एब्सट्रैक्ट सिंटैक्स ट्री आपके प्रोग्राम की बनावट दिखाता है: फ़ंक्शन में स्टेटमेंट होते हैं और स्टेटमेंट में एक्सप्रेशन।",
+    ar: "شجرة الصياغة المجردة (AST) تُظهر بنية برنامجك: الدوال تحتوي على عبارات والعبارات تحتوي على تعبيرات."}},
+  {k: ['cfg', 'control flow', 'basic block', 'کنٹرول فلو', 'بیسک بلاک', 'कंट्रोल फ़्लो', 'कंट्रोल फ्लो', 'تدفق التحكم'], t: {
+    en: "A control flow graph has basic blocks as nodes and jumps as edges. It shows every path execution can take, including loops and branches.",
+    ur: "کنٹرول فلو گراف میں بیسک بلاکس نوڈز ہوتے ہیں اور جمپس ایجز۔ یہ لوپس اور برانچز سمیت عمل کے ہر ممکنہ راستے کو دکھاتا ہے۔",
+    hi: "कंट्रोल फ़्लो ग्राफ़ में बेसिक ब्लॉक नोड होते हैं और जंप एज। यह लूप और ब्रांच समेत निष्पादन के हर संभव रास्ते को दिखाता है।",
+    ar: "في مخطط تدفق التحكم تكون الكتل الأساسية عُقدًا والقفزات حوافّ. يُظهر كل مسار ممكن للتنفيذ بما فيه الحلقات والتفرعات."}},
+  {k: ['ssa', 'phi', 'static single', 'فائی', 'फ़ाई', 'फाई', 'فاي'], t: {
+    en: "In SSA form every variable is assigned exactly once. Where paths merge, a phi function picks the right version. This makes many optimizations simple and safe.",
+    ur: "SSA میں ہر ویری ایبل کو صرف ایک بار ویلیو دی جاتی ہے۔ جہاں راستے مل جائیں وہاں فائی فنکشن درست ورژن چن لیتا ہے۔ اس سے کئی آپٹیمائزیشنز آسان اور محفوظ ہو جاتی ہیں۔",
+    hi: "SSA में हर वेरिएबल को सिर्फ़ एक बार मान दिया जाता है। जहाँ रास्ते मिलते हैं वहाँ फ़ाई फ़ंक्शन सही संस्करण चुनता है। इससे कई ऑप्टिमाइज़ेशन आसान और सुरक्षित हो जाते हैं।",
+    ar: "في صيغة SSA يُسنَد كل متغير مرة واحدة فقط. وعند التقاء المسارات تختار دالة فاي النسخة الصحيحة. هذا يجعل كثيرًا من التحسينات بسيطة وآمنة."}},
+  {k: [' ir', 'intermediate', 'three-address', 'three address', 'tac', 'انٹرمیڈیئٹ', 'इंटरमीडिएट', 'الوسيط'], t: {
+    en: "Intermediate representation, here three-address code, is a simple form with at most one operation per instruction. Optimizations work on it more easily than on source code.",
+    ur: "انٹرمیڈیئٹ ریپریزنٹیشن، یہاں تھری ایڈریس کوڈ، ایک سادہ شکل ہے جس میں ہر انسٹرکشن میں زیادہ سے زیادہ ایک عمل ہوتا ہے۔ آپٹیمائزیشنز اس پر سورس کوڈ سے زیادہ آسانی سے کام کرتی ہیں۔",
+    hi: "इंटरमीडिएट रिप्रेज़ेंटेशन, यहाँ थ्री-एड्रेस कोड, एक सरल रूप है जिसमें हर निर्देश में अधिकतम एक क्रिया होती है। ऑप्टिमाइज़ेशन इस पर सोर्स कोड से ज़्यादा आसानी से काम करते हैं।",
+    ar: "التمثيل الوسيط، وهنا شيفرة العناوين الثلاثة، صيغة بسيطة في كل تعليمة عملية واحدة على الأكثر. تعمل التحسينات عليها بسهولة أكبر من الشيفرة المصدرية."}},
+  {k: ['data-flow', 'dataflow', 'data flow', 'live variable', 'fixed point', 'ڈیٹا فلو', 'डेटा-फ़्लो', 'डेटा फ्लो', 'تدفق البيانات'], t: {
+    en: "Data-flow analysis computes facts like which variables are live or which constants are known at each point, repeating until nothing changes, the fixed point.",
+    ur: "ڈیٹا فلو اینالیسس ہر مقام پر یہ حقائق نکالتا ہے کہ کون سے ویری ایبل زندہ ہیں یا کون سے مستقل معلوم ہیں، اور تب تک دہراتا ہے جب تک کچھ نہ بدلے، یعنی فکسڈ پوائنٹ۔",
+    hi: "डेटा-फ़्लो विश्लेषण हर बिंदु पर यह निकालता है कि कौन से वेरिएबल जीवित हैं या कौन से स्थिरांक ज्ञात हैं, और तब तक दोहराता है जब तक कुछ न बदले, यानी फ़िक्स्ड पॉइंट।",
+    ar: "تحليل تدفق البيانات يحسب حقائق مثل المتغيرات الحيّة أو الثوابت المعروفة عند كل نقطة، ويكرر حتى لا يتغير شيء، أي النقطة الثابتة."}},
+  {k: ['big-o', 'big o', 'bigo', 'complexity', 'o(n', 'بگ او', 'پیچیدگی', 'کمپلیکسٹی', 'बिग', 'जटिलता', 'कॉम्प्लेक्सिटी', 'التعقيد'], t: {
+    en: "Big-O describes how running time grows with input size n. O(1) is constant, O(n) linear, O(n log n) good sorting, O(n squared) nested loops, and O(2 to the n) exponential.",
+    ur: "بگ او بتاتا ہے کہ ان پٹ سائز n کے ساتھ رننگ ٹائم کیسے بڑھتا ہے۔ O(1) مستقل، O(n) لکیری، O(n log n) اچھی سورٹنگ، O(n²) نیسٹڈ لوپس، اور O(2^n) ایکسپوننشل ہے۔",
+    hi: "बिग-ओ बताता है कि इनपुट साइज़ n के साथ रनिंग टाइम कैसे बढ़ता है। O(1) स्थिर, O(n) रैखिक, O(n log n) अच्छी सॉर्टिंग, O(n²) नेस्टेड लूप और O(2^n) घातांकीय है।",
+    ar: "الرمز Big-O يصف نمو زمن التشغيل مع حجم المدخلات n. O(1) ثابت، O(n) خطي، O(n log n) فرز جيد، O(n²) حلقات متداخلة، O(2^n) أسّي."}},
+  {k: ['memo', 'cache', 'lru', 'میموائزیشن', 'मेमोइज़ेशन', 'मेमोइजेशन', 'التذكّر', 'التذكر'], t: {
+    en: "Memoization stores the results of a function for given inputs, so repeated calls return instantly. It turns exponential recursion like naive Fibonacci into linear time.",
+    ur: "میموائزیشن کسی فنکشن کے نتائج ان پٹ کے حساب سے محفوظ کر لیتی ہے تاکہ دوبارہ کال پر فوراً جواب ملے۔ یہ فبوناچی جیسی ایکسپوننشل ری کرژن کو لکیری وقت میں بدل دیتی ہے۔",
+    hi: "मेमोइज़ेशन किसी फ़ंक्शन के नतीजे इनपुट के अनुसार सहेज लेता है ताकि दोबारा कॉल पर तुरंत जवाब मिले। यह फ़िबोनाची जैसी घातांकीय रिकर्शन को रैखिक समय में बदल देता है।",
+    ar: "التذكّر (memoization) يحفظ نتائج الدالة لكل مدخل فتعود الاستدعاءات المتكررة فورًا. يحوّل التعاود الأسّي مثل فيبوناتشي إلى زمن خطي."}},
+  {k: ['symbol', 'scope', 'سمبل', 'اسکوپ', 'सिंबल', 'स्कोप', 'جدول الرموز', 'نطاق'], t: {
+    en: "A symbol table records every name in each scope with its kind, such as variable, function or parameter. It helps find undefined and unused names.",
+    ur: "سمبل ٹیبل ہر اسکوپ کے تمام ناموں کو ان کی قسم کے ساتھ درج کرتا ہے، جیسے ویری ایبل، فنکشن یا پیرامیٹر۔ اس سے غیر متعین اور غیر استعمال شدہ نام پکڑے جاتے ہیں۔",
+    hi: "सिंबल टेबल हर स्कोप के सभी नामों को उनके प्रकार के साथ दर्ज करती है, जैसे वेरिएबल, फ़ंक्शन या पैरामीटर। इससे अपरिभाषित और अप्रयुक्त नाम पकड़े जाते हैं।",
+    ar: "جدول الرموز يسجل كل اسم في كل نطاق مع نوعه كمتغير أو دالة أو معامل. يساعد في كشف الأسماء غير المعرّفة وغير المستخدمة."}}
+];

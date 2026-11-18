@@ -1,0 +1,4 @@
+Flask>=2.3
+# optional, for testing / stronger property-based validation:
+# pytest>=7
+# hypothesis>=6

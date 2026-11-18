@@ -1,0 +1,30 @@
+# Python artifacts
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+.hypothesis/
+*.egg-info/
+build/
+dist/
+.venv/
+venv/
+env/
+
+# Local configuration and editor files
+.env
+.env.*
+!.env.example
+.vscode/
+.idea/
+
+# Runtime reports and generated local data
+data/reports/*
+!data/reports/.gitkeep
+data/history.json
+reports/history.json
+
+# OS files
+.DS_Store
+Thumbs.db
+Desktop.ini
